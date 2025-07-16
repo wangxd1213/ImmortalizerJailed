@@ -1,5 +1,5 @@
 .theos/
 packages/
 .DS_Store
-.control
-.ZImmortalizerJailed.plist
+control
+ZImmortalizerJailed.plist

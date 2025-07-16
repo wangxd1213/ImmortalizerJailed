@@ -9,7 +9,7 @@ _This is the jailed version of the tweak [Immortalizer](https://github.com/serge
 
 ### Installation
 1. No need for jailbreak or TrollStore, so all you have to do is inject the dylib to an IPA you want this to work.
-2. You may use any tools like **Sideloadly**, **E-Sign**, or even **TrollFools** to inject the dylib.
+2. You may use any tools like **Sideloadly**, **E-Sign**, or even **TrollFools** to inject the dylib to an app.
 
 ### Details
 - Just like the tweak, it can make apps stay in the foreground, however, you need to inject this onto the app you want to immortalize. 
