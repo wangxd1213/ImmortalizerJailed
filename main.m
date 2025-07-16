@@ -25,29 +25,34 @@ void new_sceneID_updateWithSettingsDiff_transitionContext_completion(id self, SE
     }
 }
 
+static void setup() {
+    /* using didFinishLaunching is unreliable, to fix */
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{ 
+        Class targetClass = objc_getClass("FBSWorkspaceScenesClient");
+        SEL originalSelector = @selector(sceneID:updateWithSettingsDiff:transitionContext:completion:);
+        Method originalMethod = class_getInstanceMethod(targetClass, originalSelector);
+
+        if (originalMethod) {
+            original_sceneID_updateWithSettingsDiff_transitionContext_completion = (void (*)(id, SEL, id, id, id, id))method_getImplementation(originalMethod);
+            method_setImplementation(originalMethod, (IMP)new_sceneID_updateWithSettingsDiff_transitionContext_completion);
+        }
+
+        UIWindow *mainWindow = nil;
+
+        for (UIScene *scene in [UIApplication.sharedApplication connectedScenes]) {
+            if ([scene isKindOfClass:[UIWindowScene class]]) {
+                mainWindow = [(UIWindowScene *)scene windows].firstObject;
+                break;
+            }
+        }
+        if (mainWindow) {
+            CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)prefsChanged, CFSTR("com.sergy.immortalizerjailed.updateprefs"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
+            [[FloatingButton sharedInstance] showFloatingButtonOnWindow:mainWindow];
+        }
+    });
+}
+
 __attribute__((constructor)) static void initialize() {
-	Class targetClass = objc_getClass("FBSWorkspaceScenesClient");
-	SEL originalSelector = @selector(sceneID:updateWithSettingsDiff:transitionContext:completion:);
-	Method originalMethod = class_getInstanceMethod(targetClass, originalSelector);
-
-	if (originalMethod) {
-		original_sceneID_updateWithSettingsDiff_transitionContext_completion = (void (*)(id, SEL, id, id, id, id))method_getImplementation(originalMethod);
-		method_setImplementation(originalMethod, (IMP)new_sceneID_updateWithSettingsDiff_transitionContext_completion);
-	}
-
 	prefsChanged();
-	dispatch_async(dispatch_get_main_queue(), ^{
-		UIWindow *mainWindow = nil;
-
-		for (UIScene *scene in [UIApplication.sharedApplication connectedScenes]) {
-			if ([scene isKindOfClass:[UIWindowScene class]]) {
-				mainWindow = [(UIWindowScene *)scene windows].firstObject;
-				break;
-			}
-		}
-		if (mainWindow) {
-			CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)prefsChanged, CFSTR("com.sergy.immortalizerjailed.updateprefs"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
-			[[FloatingButton sharedInstance] showFloatingButtonOnWindow:mainWindow];
-		}
-	});
+    setup();
 }

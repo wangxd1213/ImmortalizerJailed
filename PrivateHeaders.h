@@ -3,8 +3,7 @@
 
 @interface BSSettings : NSObject
 - (NSMutableIndexSet *)allSettings;
-- (BOOL)boolForSetting:(NSUInteger)setting;
-- (id)objectForSetting:(NSUInteger)setting;
 - (void)setFlag:(NSUInteger)value forSetting:(NSUInteger)setting;
+- (id)objectForSetting:(NSUInteger)setting;
+- (BOOL)boolForSetting:(NSUInteger)setting;
 @end
-

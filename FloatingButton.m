@@ -2,6 +2,7 @@
 #import "FloatingButton.h"
 #import "PrivateHeaders.h"
 #import "CustomToastView.h"
+#import <AVFoundation/AVFoundation.h>
 
 static void vibrateDevice() {
 	UIImpactFeedbackGenerator *feedback = [[UIImpactFeedbackGenerator alloc] initWithStyle: UIImpactFeedbackStyleHeavy];
@@ -12,6 +13,9 @@ static void vibrateDevice() {
 @interface FloatingButton ()
 @property (nonatomic, strong) UIButton *floatingButton;
 @property (nonatomic, assign) BOOL isImmortalized;
+
+@property (strong, nonatomic) AVAudioPlayer *audioPlayer; /* dirty trick to stop apps from being killed */
+@property (strong, nonatomic) NSTimer *timer;
 @end
 
 @implementation FloatingButton
@@ -61,16 +65,19 @@ static void vibrateDevice() {
 - (void)showToast {
     NSString *subtitle = @"";
     NSString *icon = @"";
+    NSString *appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleName"];
 
     if (self.isImmortalized) {
         subtitle = @"Immortalized";
         icon = @"hourglass.bottomhalf.fill";
+        [self startTimer];
     } else {
         subtitle = @"At Rest";
         icon = @"arrow.uturn.left.circle.fill";
+        [self stopTimer];
     }
 
-    CustomToastView *toastView = [[CustomToastView alloc] initWithTitle:@"Immortalizer" subtitle:subtitle 
+    CustomToastView *toastView = [[CustomToastView alloc] initWithTitle:appName subtitle:subtitle 
                                     icon:[UIImage systemImageNamed:icon] autoHide:3.0];
 
     [toastView presentToast];
@@ -102,6 +109,51 @@ static void vibrateDevice() {
     } else {
         self.floatingButton.backgroundColor = [UIColor redColor];
     }
+}
+
+/* dirty trick to stop apps from being killed, don't judge me */
+/* you may wonder why tf i need a timer that keeps calling the play method. */
+/* well, there are apps that may play audio, and sometimes it can interfere with the playback of this white noise audio were playing here */
+/* unless you can suggest a better way. yes i am lazy lol if it works it works /s */
+
+- (void)startPlayingSilentAudio {
+    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionMixWithOthers error:nil];
+    [[AVAudioSession sharedInstance] setActive:YES error:nil];
+
+
+    NSData *audioData = [[NSData alloc] initWithBase64EncodedString:kBase64Audio options:NSDataBase64DecodingIgnoreUnknownCharacters];
+
+    self.audioPlayer = [[AVAudioPlayer alloc] initWithData:audioData error:nil];
+    self.audioPlayer.volume = 0.0; /* no sound should be made */
+    [self.audioPlayer prepareToPlay];
+    self.audioPlayer.numberOfLoops = -1;
+    [self.audioPlayer play];
+}
+
+- (void)stopPlayingSilentAudio {
+    [self.audioPlayer stop];
+    [[AVAudioSession sharedInstance] setActive:NO error:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)startTimer {
+    [self.timer invalidate];
+    
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:1.0
+                                                  target:self
+                                                selector:@selector(timerFired)
+                                                userInfo:nil
+                                                 repeats:YES];
+}
+
+- (void)stopTimer {
+    [self stopPlayingSilentAudio];
+    [self.timer invalidate];
+    self.timer = nil;
+}
+
+- (void)timerFired {
+    [self startPlayingSilentAudio];
 }
 
 @end
