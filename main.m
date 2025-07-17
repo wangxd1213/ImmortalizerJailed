@@ -27,6 +27,7 @@ static void prefsChanged() {
 
 static void (*original_sceneID_updateWithSettingsDiff_transitionContext_completion)(id, SEL, id, id, id, id);
 
+/* thanks to @khanhduytran0 for this wonderful hook. goat */
 void new_sceneID_updateWithSettingsDiff_transitionContext_completion(id self, SEL _cmd, id arg1, id arg2, id arg3, id arg4) {
     if (!isImmortalized) {
         return original_sceneID_updateWithSettingsDiff_transitionContext_completion(self, _cmd, arg1, arg2, arg3, arg4);
