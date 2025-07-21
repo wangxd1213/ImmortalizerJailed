@@ -25,16 +25,6 @@
 
 @implementation CustomToastView
 
--(UIWindow *)getKeyWindow {
-    for (UIScene *scene in [UIApplication.sharedApplication connectedScenes]) {
-        if ([scene isKindOfClass:[UIWindowScene class]]) {
-            return [(UIWindowScene *)scene windows].firstObject;
-            break;
-        }
-    }
-    return nil;
-}
-
 -(instancetype)initWithTitle:(NSString *)title subtitle:(NSString *)subtitle icon:(UIImage *)icon autoHide:(int)seconds {
     self = [super initWithFrame:CGRectZero];
     if (self) {
@@ -118,32 +108,31 @@
     return self;
 }
 
--(void)presentToast {
-    UIWindow *keyWindow = [self getKeyWindow];
-    
-    if (!keyWindow) return;
+-(void)presentToastInViewController:(UIViewController *)viewController {
+    if (!viewController) return;
 
-    for (UIView *subview in keyWindow.subviews) {
+    // Remove any existing toast views from the view controller's view
+    for (UIView *subview in viewController.view.subviews) {
         if ([subview isKindOfClass:[CustomToastView class]]) {
             [(CustomToastView *)subview hideWithAnimation];
         }
     }
 
-    [keyWindow addSubview:self];
+    [viewController.view addSubview:self];
     
     self.translatesAutoresizingMaskIntoConstraints = NO;
     
     NSMutableArray *constraints = [NSMutableArray array];
     [constraints addObjectsFromArray:@[
-        [self.centerXAnchor constraintEqualToAnchor:keyWindow.centerXAnchor],
-        [self.topAnchor constraintEqualToAnchor:keyWindow.topAnchor constant:40],
-        [self.widthAnchor constraintEqualToConstant:keyWindow.bounds.size.width - 190],
+        [self.centerXAnchor constraintEqualToAnchor:viewController.view.centerXAnchor],
+        [self.topAnchor constraintEqualToAnchor:viewController.view.topAnchor constant:40],
+        [self.widthAnchor constraintEqualToConstant:viewController.view.bounds.size.width - 190],
         [self.heightAnchor constraintEqualToConstant:70]
     ]];
     
     [NSLayoutConstraint activateConstraints:constraints];
     
-    [keyWindow layoutIfNeeded];
+    [viewController.view layoutIfNeeded];
     
     self.transform = CGAffineTransformMakeTranslation(0, -self.bounds.size.height);
     
@@ -151,6 +140,10 @@
         self.transform = CGAffineTransformIdentity;
     } completion:^(BOOL finished) {
     }];
+}
+
+-(void)removeFromSuperview {
+    [super removeFromSuperview];
 }
 
 -(void)hideWithAnimation {
