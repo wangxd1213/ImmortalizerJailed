@@ -36,7 +36,6 @@ void new_sceneID_updateWithSettingsDiff_transitionContext_completion(id self, SE
     /* universal approach using description. hehe lazy */
 
     NSString *diffDescription = [arg2 description];
-    fork();
 
     if ([diffDescription containsString:@"foreground = NotSet"] || 
         [diffDescription containsString:@"foreground = No"] || 
@@ -45,14 +44,21 @@ void new_sceneID_updateWithSettingsDiff_transitionContext_completion(id self, SE
         return;
     }
 
+    if ([diffDescription containsString:@"hostContextIdentifierForSnapshotting = 0"] || 
+        [diffDescription containsString:@"scenePresenterRenderIdentifierForSnapshotting = 0"] ||
+        [diffDescription containsString:@"targetOfEventDeferringEnvironments = (empty)"]) { 
+        return;
+    }
+    
+    if ([diffDescription containsString:@"FBSceneSnapshotAction:"]) { 
+        return;
+    }
+
     BOOL isGoingToForeground = [diffDescription containsString:@"foreground = Yes"] || 
                                 [diffDescription containsString:@"foreground = YES"] || 
                                 [diffDescription containsString:@"foreground = BSSettingFlagYes"];
 
-    BOOL isClearingDeactivation = [diffDescription containsString:@"deactivationReasons = ;"];
-
-
-    if (!isGoingToForeground && !isClearingDeactivation) {
+    if (!isGoingToForeground) {
         if ([diffDescription containsString:@"deactivationReasons = systemGesture"] ||
             [diffDescription containsString:@"deactivationReasons = systemAnimation"] ||
             [diffDescription containsString:@"systemGesture, systemAnimation"]) {

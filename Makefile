@@ -3,7 +3,7 @@
 
 TARGET := iphone:clang:16.5:14.0
 ARCHS = arm64
-# INSTALL_TARGET_PROCESSES = Messenger
+# INSTALL_TARGET_PROCESSES = Preferences
 
 include $(THEOS)/makefiles/common.mk
 

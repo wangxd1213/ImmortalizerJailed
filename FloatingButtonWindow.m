@@ -55,7 +55,13 @@ static void vibrateDevice() {
 }
 
 - (void)setupWindow {
-    self.windowLevel = UIWindowLevelStatusBar + 1;
+    for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
+        if ([scene isKindOfClass:[UIWindowScene class]]) {
+            self.windowScene = (UIWindowScene *)scene;
+            break;
+        }
+    }
+    self.windowLevel = UIWindowLevelAlert + 1;
     self.userInteractionEnabled = YES;
     self.backgroundColor = [UIColor clearColor];
     self.rootViewController = [[UIViewController alloc] init];
